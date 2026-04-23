@@ -53,7 +53,9 @@ def run_command(cmd, cwd=None, env=None):
 
 def build_mpy_cross():
     print("Building mpy-cross...")
-    run_command(["make", "-C", "submodules/micropython/mpy-cross"])
+    # Clear variables that might interfere with mpy-cross build if they are in the environment
+    env = {"USER_C_MODULES": "", "FROZEN_MANIFEST": ""}
+    run_command(["make", "-C", "submodules/micropython/mpy-cross"], env=env)
 
 
 def process_assets():
@@ -174,8 +176,7 @@ def main():
             cmd.extend(["--profile", args.profile])
         run_command(cmd)
     else:
-        if args.target != "unix":
-            build_mpy_cross()
+        build_mpy_cross()
         build_target(args.target, args.board, args.profile)
         if args.flash:
             flash_device(args.target, args.board or TARGETS[args.target]["board"])
