@@ -21,6 +21,8 @@ CI_BOARDS = [
     {"target": "rp2350", "board": "RPI_PICO2"},
     {"target": "esp32", "board": "ESP32_GENERIC"},
     {"target": "esp32", "board": "ESP32_GENERIC_S3"},
+    {"target": "nrf52", "board": "PCA10040"},
+    {"target": "unix", "board": "standard"},
 ]
 
 

@@ -88,6 +88,8 @@ jobs:
         path: |
           submodules/micropython/ports/rp2/build*/firmware.uf2
           submodules/micropython/ports/esp32/build*/micropython.bin
+          submodules/micropython/ports/nrf/build*/firmware.hex
+          submodules/micropython/ports/unix/build-standard/micropython
 
   release:
     needs: build
