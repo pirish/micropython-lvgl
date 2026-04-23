@@ -81,15 +81,24 @@ jobs:
         path: '.'
         command: 'python3 scripts/build.py --target esp32 --board ${{ matrix.board }}'
 
+    - name: Prepare Artifact
+      run: |
+        mkdir -p deploy
+        if [ "${{ matrix.target }}" = "rp2040" ] || [ "${{ matrix.target }}" = "rp2350" ]; then
+          cp submodules/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2 deploy/lvgl-mpy-${{ matrix.target }}-${{ matrix.board }}.uf2
+        elif [ "${{ matrix.target }}" = "esp32" ]; then
+          cp submodules/micropython/ports/esp32/build-${{ matrix.board }}/micropython.bin deploy/lvgl-mpy-${{ matrix.target }}-${{ matrix.board }}.bin
+        elif [ "${{ matrix.target }}" = "nrf52" ]; then
+          cp submodules/micropython/ports/nrf/build-${{ matrix.board }}/firmware.hex deploy/lvgl-mpy-${{ matrix.target }}-${{ matrix.board }}.hex
+        elif [ "${{ matrix.target }}" = "unix" ]; then
+          cp submodules/micropython/ports/unix/build-standard/micropython deploy/lvgl-mpy-unix
+        fi
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: firmware-${{ matrix.target }}-${{ matrix.board }}
-        path: |
-          submodules/micropython/ports/rp2/build*/firmware.uf2
-          submodules/micropython/ports/esp32/build*/micropython.bin
-          submodules/micropython/ports/nrf/build*/firmware.hex
-          submodules/micropython/ports/unix/build-standard/micropython
+        path: deploy/*
 
   release:
     needs: build
