@@ -29,10 +29,24 @@ def run_command(cmd, cwd=None, env=None):
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
-    result = subprocess.run(cmd, cwd=cwd, env=merged_env)
+    result = subprocess.run(cmd, cwd=cwd, env=merged_env, capture_output=True, text=True)
     if result.returncode != 0:
         print(f"Error executing command: {' '.join(cmd)}")
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        
+        # Try to find and print CMake logs if it's a configuration error
+        for root, dirs, files in os.walk("."):
+            if "CMakeError.log" in files or "CMakeOutput.log" in files:
+                for f in files:
+                    if f in ["CMakeError.log", "CMakeOutput.log"]:
+                        path = os.path.join(root, f)
+                        print(f"\n--- {path} ---")
+                        with open(path, "r") as log_f:
+                            print(log_f.read()[-2000:]) # Print last 2000 chars
         sys.exit(1)
+    else:
+        print(result.stdout)
 
 
 def build_mpy_cross():
@@ -77,28 +91,38 @@ def build_target(target, board=None, profile=None):
     process_assets()
     apply_profile(profile)
 
+    # Use relative paths for paths passed to make/cmake to avoid issues with absolute paths in Docker
     lv_bindings = os.path.abspath("submodules/lv_binding_micropython")
     manifest = os.path.abspath("modules/manifest.py")
+    custom_conf = os.path.abspath("config/lv_conf.h")
+
+    if target in ["esp32", "rp2040", "rp2350"]:
+        # Relative to submodules/micropython/ports/<port>
+        lv_bindings_rel = "../../../lv_binding_micropython"
+        manifest_rel = "../../../../modules/manifest.py"
+        custom_conf_rel = "../../../../config/lv_conf.h"
+    else:
+        lv_bindings_rel = lv_bindings
+        manifest_rel = manifest
+        custom_conf_rel = custom_conf
+
     ccache_dir = os.path.abspath(".ccache")
     os.makedirs(ccache_dir, exist_ok=True)
 
     env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3"}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
-    cmd.append(f"USER_C_MODULES={lv_bindings}")
+    cmd.append(f"USER_C_MODULES={lv_bindings_rel}")
 
     if target == "unix":
-        cmd.extend([f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
+        cmd.extend([f"FROZEN_MANIFEST={manifest_rel}", "VARIANT=standard"])
     else:
-        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest}"])
+        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest_rel}"])
 
-    custom_conf = os.path.abspath("config/lv_conf.h")
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
-        cmd.append(f"LV_CONF_PATH={custom_conf}")
+        cmd.append(f"LV_CONF_PATH={custom_conf_rel}")
         if target in ["esp32", "rp2040", "rp2350"]:
-            # For CMake-based ports, we also pass it through CMAKE_ARGS
-            # to ensure it's available during the configuration phase.
-            cmd.append(f'CMAKE_ARGS=-DLV_CONF_PATH={custom_conf}')
+            cmd.append(f'CMAKE_ARGS=-DLV_CONF_PATH={custom_conf_rel}')
 
     run_command(cmd, env=env)
 
