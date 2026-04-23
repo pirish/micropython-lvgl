@@ -43,7 +43,7 @@ def run_command(cmd, cwd=None, env=None):
                         path = os.path.join(root, f)
                         print(f"\n--- {path} ---")
                         with open(path, "r") as log_f:
-                            print(log_f.read()[-2000:]) # Print last 2000 chars
+                            print(log_f.read()[-2000:])  # Print last 2000 chars
         sys.exit(1)
     else:
         print(result.stdout)
@@ -122,7 +122,7 @@ def build_target(target, board=None, profile=None):
         env["LV_CONF_PATH"] = custom_conf
         cmd.append(f"LV_CONF_PATH={custom_conf_rel}")
         if target in ["esp32", "rp2040", "rp2350"]:
-            cmd.append(f'CMAKE_ARGS=-DLV_CONF_PATH={custom_conf_rel}')
+            cmd.append(f"CMAKE_ARGS=-DLV_CONF_PATH={custom_conf_rel}")
 
     run_command(cmd, env=env)
 
