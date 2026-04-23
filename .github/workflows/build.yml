@@ -77,7 +77,7 @@ jobs:
       if: matrix.target == 'esp32'
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.1.2
+        esp_idf_version: v5.5.1
         path: '.'
         command: 'python3 scripts/build.py --target esp32 --board ${{ matrix.board }}'
 

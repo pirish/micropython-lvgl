@@ -109,7 +109,7 @@ def build_target(target, board=None, profile=None):
     ccache_dir = os.path.abspath(".ccache")
     os.makedirs(ccache_dir, exist_ok=True)
 
-    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3"}
+    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3", "MICROPY_MAINTAINER_BUILD": "0"}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
     cmd.append(f"USER_C_MODULES={lv_bindings_rel}")
 
