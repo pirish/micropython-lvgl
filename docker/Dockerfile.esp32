@@ -1,0 +1,16 @@
+# ESP32 Toolchain using ESP-IDF
+FROM espressif/idf:v5.1.2
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    git \
+    doxygen \
+    ccache \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies for LVGL binding script
+RUN pip3 install --no-cache-dir pyelftools
+
+WORKDIR /build

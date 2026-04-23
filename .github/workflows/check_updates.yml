@@ -1,0 +1,45 @@
+name: Check for Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Once a day at midnight
+  workflow_dispatch:
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Latest MicroPython Tag
+        id: mpy
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/micropython/micropython/releases/latest | jq -r .tag_name)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Get Latest LVGL Tag
+        id: lvgl
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/lvgl/lvgl/releases/latest | jq -r .tag_name)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Get Our Latest Release Tag
+        id: ours
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Trigger Build if New Version
+        if: steps.ours.outputs.tag != format('{0}_{1}', steps.mpy.outputs.tag, steps.lvgl.outputs.tag)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build.yml',
+              ref: 'main',
+              inputs: {
+                mpy_tag: '${{ steps.mpy.outputs.tag }}',
+                lvgl_tag: '${{ steps.lvgl.outputs.tag }}',
+                is_release: 'true'
+              }
+            })

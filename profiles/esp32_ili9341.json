@@ -1,0 +1,18 @@
+{
+    "name": "ESP32 ILI9341",
+    "target": "esp32",
+    "board": "ESP32_GENERIC",
+    "display": "ili9341",
+    "pins": {
+        "miso": 19,
+        "mosi": 23,
+        "sck": 18,
+        "cs": 5,
+        "dc": 2,
+        "rst": 4,
+        "backlight": 15
+    },
+    "width": 320,
+    "height": 240,
+    "rotation": 0
+}
