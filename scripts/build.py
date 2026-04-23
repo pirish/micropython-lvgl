@@ -96,6 +96,8 @@ def build_target(target, board=None, profile=None):
     custom_conf = os.path.abspath("config/lv_conf.h")
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
+        if target in ["esp32", "rp2040", "rp2350"]:
+            cmd.append(f"CMAKE_ARGS=-DLV_CONF_PATH={custom_conf}")
 
     run_command(cmd, env=env)
 
