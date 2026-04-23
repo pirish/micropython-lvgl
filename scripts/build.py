@@ -112,7 +112,7 @@ def get_container_engine(prefer_podman=False):
 
 def main():
     parser = argparse.ArgumentParser(description="MicroPython + LVGL Build Glue Script")
-    parser.add_argument("--target", choices=TARGETS.keys(), required=True)
+    parser.add_argument("--target", choices=TARGETS.keys())
     parser.add_argument("--board", help="Specific board")
     parser.add_argument("--profile", help="Path to hardware profile JSON")
     parser.add_argument("--docker", action="store_true")
@@ -125,6 +125,9 @@ def main():
     if args.ci_matrix:
         print(json.dumps(CI_BOARDS))
         return
+
+    if not args.target:
+        parser.error("the following arguments are required: --target")
 
     if args.docker or args.podman:
         engine = get_container_engine(args.podman)
