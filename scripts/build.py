@@ -34,7 +34,7 @@ def run_command(cmd, cwd=None, env=None):
         print(f"Error executing command: {' '.join(cmd)}")
         print("STDOUT:", result.stdout)
         print("STDERR:", result.stderr)
-        
+
         # Try to find and print CMake logs if it's a configuration error
         for root, dirs, files in os.walk("."):
             if "CMakeError.log" in files or "CMakeOutput.log" in files:
