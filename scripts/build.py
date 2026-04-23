@@ -91,38 +91,27 @@ def build_target(target, board=None, profile=None):
     process_assets()
     apply_profile(profile)
 
-    # Use relative paths for paths passed to make/cmake to avoid issues with absolute paths in Docker
     lv_bindings = os.path.abspath("submodules/lv_binding_micropython")
     manifest = os.path.abspath("modules/manifest.py")
     custom_conf = os.path.abspath("config/lv_conf.h")
-
-    if target in ["esp32", "rp2040", "rp2350"]:
-        # Relative to submodules/micropython/ports/<port>
-        lv_bindings_rel = "../../../lv_binding_micropython"
-        manifest_rel = "../../../../modules/manifest.py"
-        custom_conf_rel = "../../../../config/lv_conf.h"
-    else:
-        lv_bindings_rel = lv_bindings
-        manifest_rel = manifest
-        custom_conf_rel = custom_conf
 
     ccache_dir = os.path.abspath(".ccache")
     os.makedirs(ccache_dir, exist_ok=True)
 
     env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3", "MICROPY_MAINTAINER_BUILD": "0"}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
-    cmd.append(f"USER_C_MODULES={lv_bindings_rel}")
+    cmd.append(f"USER_C_MODULES={lv_bindings}")
 
     if target == "unix":
-        cmd.extend([f"FROZEN_MANIFEST={manifest_rel}", "VARIANT=standard"])
+        cmd.extend([f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
     else:
-        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest_rel}"])
+        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest}"])
 
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
-        cmd.append(f"LV_CONF_PATH={custom_conf_rel}")
+        cmd.append(f"LV_CONF_PATH={custom_conf}")
         if target in ["esp32", "rp2040", "rp2350"]:
-            cmd.append(f"CMAKE_ARGS=-DLV_CONF_PATH={custom_conf_rel}")
+            cmd.append(f"CMAKE_ARGS=-DLV_CONF_PATH={custom_conf}")
 
     run_command(cmd, env=env)
 
