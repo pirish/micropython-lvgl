@@ -82,22 +82,17 @@ def build_target(target, board=None, profile=None):
     ccache_dir = os.path.abspath(".ccache")
     os.makedirs(ccache_dir, exist_ok=True)
 
-    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3"}
+    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3", "USER_C_MODULES": lv_bindings}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
 
-    # Note: MicroPython's make system expects USER_C_MODULES to be a directory
-    # containing a micropython.cmake or micropython.mk file.
-    # The lv_binding_micropython submodule has micropython.cmake at its root.
     if target == "unix":
-        cmd.extend([f"USER_C_MODULES={lv_bindings}", f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
+        cmd.extend([f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
     else:
-        cmd.extend([f"BOARD={board}", f"USER_C_MODULES={lv_bindings}", f"FROZEN_MANIFEST={manifest}"])
+        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest}"])
 
     custom_conf = os.path.abspath("config/lv_conf.h")
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
-        if target in ["esp32", "rp2040", "rp2350"]:
-            cmd.append(f"CMAKE_ARGS=-DLV_CONF_PATH={custom_conf}")
 
     run_command(cmd, env=env)
 

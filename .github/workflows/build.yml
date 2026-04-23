@@ -37,6 +37,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - id: set-matrix
         run: |
           MATRIX=$(python3 scripts/build.py --ci-matrix)
