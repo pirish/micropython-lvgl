@@ -101,11 +101,12 @@ def build_target(target, board=None, profile=None):
     env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3", "MICROPY_MAINTAINER_BUILD": "0"}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
     cmd.append(f"USER_C_MODULES={lv_bindings}")
+    cmd.append(f"FROZEN_MANIFEST={manifest}")
 
     if target == "unix":
-        cmd.extend([f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
+        cmd.append("VARIANT=standard")
     else:
-        cmd.extend([f"BOARD={board}", f"FROZEN_MANIFEST={manifest}"])
+        cmd.append(f"BOARD={board}")
 
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
