@@ -93,6 +93,8 @@ jobs:
     needs: build
     if: ${{ github.event.inputs.is_release == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
