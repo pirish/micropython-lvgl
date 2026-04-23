@@ -82,8 +82,9 @@ def build_target(target, board=None, profile=None):
     ccache_dir = os.path.abspath(".ccache")
     os.makedirs(ccache_dir, exist_ok=True)
 
-    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3", "USER_C_MODULES": lv_bindings}
+    env = {"CCACHE_DIR": ccache_dir, "MICROPY_CPYTHON3": "python3"}
     cmd = ["make", "-C", f"submodules/micropython/ports/{port}"]
+    cmd.append(f"USER_C_MODULES={lv_bindings}")
 
     if target == "unix":
         cmd.extend([f"FROZEN_MANIFEST={manifest}", "VARIANT=standard"])
@@ -93,6 +94,11 @@ def build_target(target, board=None, profile=None):
     custom_conf = os.path.abspath("config/lv_conf.h")
     if os.path.exists(custom_conf):
         env["LV_CONF_PATH"] = custom_conf
+        cmd.append(f"LV_CONF_PATH={custom_conf}")
+        if target in ["esp32", "rp2040", "rp2350"]:
+            # For CMake-based ports, we also pass it through CMAKE_ARGS
+            # to ensure it's available during the configuration phase.
+            cmd.append(f'CMAKE_ARGS=-DLV_CONF_PATH={custom_conf}')
 
     run_command(cmd, env=env)
 
